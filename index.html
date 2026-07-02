@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบจองรถส่วนกลาง (มีระบบล็อกอินและระบุสถานที่)</title>
+    <title>ระบบจองรถฝ่ายคุณภาพน้ำ</title>
     
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
@@ -69,6 +69,17 @@
 
         #calendar { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); min-height: 550px; }
         .fc-event { cursor: pointer; padding: 2px 4px; font-size: 13px; border: none !important; }
+
+        /* 🌟 ส่วนที่เพิ่มเข้าไป: ปรับแต่งเส้นตาราง FullCalendar ให้เป็นสีดำทึบ 🌟 */
+        :root {
+            --fc-border-color: #000000 !important; /* เปลี่ยนตัวแปรสีเส้นขอบหลักของระบบเป็นสีดำ */
+        }
+        .fc th, .fc td {
+            border: 1px solid #000000 !important; /* บังคับเส้นตารางทุกช่องให้เป็นเส้นทึบสีดำ */
+        }
+        .fc-theme-standard .fc-scrollgrid {
+            border: 1px solid #000000 !important; /* เส้นขอบนอกสุดของปฏิทิน */
+        }
     </style>
 </head>
 <body>
@@ -98,8 +109,8 @@
     </div>
 
     <header>
-        <h1>📅 ตารางจองรถส่วนกลางฝ่ายคุณภาพน้ำ</h1>
-        <p>ตรวจสอบสถานะคิวงานและการจองยานพาหนะขององค์กร</p>
+        <h1>📅 ตารางจองรถฝ่ายคุณภาพน้ำ</h1>
+        <p>ตรวจสอบสถานะคิวงานและการจองยานพาหนะของฝ่ายคุณภาพน้ำ</p>
     </header>
 
     <div class="color-legend">
@@ -122,13 +133,13 @@
                     <select id="carType" required>
                         <option value="">-- เลือกยานพาหนะ --</option>
                         <option value="🚐 รถตู้ส่วนกลาง">🚐 รถตู้ส่วนกลาง</option>
-                        <option value="🚚 รถกระบะขนของ">🚚 รถกระบะขนของ</option>
+                        <option value="🛻 รถกระบะขนของ">🛻 รถกระบะขนของ</option>
                         <option value="🚗 รถยนต์ส่วนบุคคล">🚗 รถยนต์ส่วนบุคคล</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label for="destination">สถานที่ที่จะไป / วัตถุประสงค์</label>
-                    <input type="text" id="destination" placeholder="เช่น ไปส่งเอกสารที่ระยอง, ไปไซต์งาน" required>
+                    <input type="text" id="destination" placeholder="เช่น ไปเก็บตัวอย่างน้ำ, ไปไซต์งาน" required>
                 </div>
                 <div class="form-group">
                     <label for="startDate">วัน/เวลา เริ่มใช้รถ</label>
@@ -148,7 +159,7 @@
 </div>
 
 <script>
-    // 1. ระบบฐานข้อมูลจำลอง (อัปเดตโครงสร้างให้รองรับ 'location')
+    // 1. ระบบฐานข้อมูลจำลอง 
     let bookings = JSON.parse(localStorage.getItem('car_bookings_loc_v1')) || [
         { id: '1', name: "สมชาย รักดี", car: "🚐 รถตู้ส่วนกลาง", location: "ศูนย์ประชุมแห่งชาติสิริกิติ์", start: "2026-07-10T08:00", end: "2026-07-10T17:00" },
         { id: '2', name: "สมหญิง มุ่งมั่น", car: "🚗 รถยนต์ส่วนบุคคล", location: "นิคมอุสาหกรรมบางปู", start: "2026-07-12T09:00", end: "2026-07-14T12:00" }
@@ -172,6 +183,7 @@
         initSystem();
     });
 
+    // เริ่มทำงานระบบหลังเข้าสู่ระบบสำเร็จ
     function initSystem() {
         document.getElementById('loginOverlay').style.display = 'none';
         document.getElementById('mainContainer').style.display = 'block';
@@ -210,7 +222,6 @@
     function formatEventsForCalendar() {
         return bookings.map(b => ({
             id: b.id,
-            // 🌟 ปรับข้อความบนแถบปฏิทินให้โชว์: [ชื่อรถ] ชื่อคนจอง (ไปที่ไหน)
             title: `${b.car} - ${b.name} (${b.location})`,
             start: b.start,
             end: b.end,
@@ -234,13 +245,11 @@
             eventClick: function(info) {
                 const eventObj = info.event;
                 
-                // ถ้าเป็นผู้ใช้ทั่วไป กดที่แถบจะโชว์รายละเอียดว่าไปไหน แต่ลบไม่ได้
                 if (currentRole !== 'admin') {
                     alert(`ℹ️ รายละเอียดการจองรถ:\n\nผู้ขอใช้งาน: ${eventObj.extendedProps.name}\nรถที่เลือก: ${eventObj.extendedProps.car}\nสถานที่ไป: ${eventObj.extendedProps.location}`);
                     return;
                 }
                 
-                // สิทธิ์แอดมินสามารถกดยกเลิกคิวได้
                 if (confirm(`❌ (สิทธิ์แอดมิน) ต้องการยกเลิกการจองนี้ใช่หรือไม่?\n\nผู้จอง: ${eventObj.extendedProps.name}\nรถที่เลือก: ${eventObj.extendedProps.car}\nสถานที่ไป: ${eventObj.extendedProps.location}`)) {
                     bookings = bookings.filter(b => b.id !== eventObj.id);
                     localStorage.setItem('car_bookings_loc_v1', JSON.stringify(bookings));
@@ -280,7 +289,7 @@
 
         const name = document.getElementById("userName").value.trim();
         const car = document.getElementById("carType").value;
-        const location = document.getElementById("destination").value.trim(); // ดึงค่าสถานที่
+        const location = document.getElementById("destination").value.trim(); 
         const start = document.getElementById("startDate").value;
         const end = document.getElementById("endDate").value;
 
@@ -304,7 +313,6 @@
         bookings.push(newBooking);
         localStorage.setItem('car_bookings_loc_v1', JSON.stringify(bookings));
 
-        // อัปเดตขึ้นบนหน้าปฏิทิน
         calendar.addEvent({
             id: newId,
             title: `${car} - ${name} (${location})`,
