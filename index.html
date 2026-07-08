@@ -168,8 +168,19 @@
     let calendar;
     let currentRole = null; 
 
-    function showLoading(show) {
+   function showLoading(show) {
         document.getElementById('loading').style.display = show ? 'flex' : 'none';
+    }
+
+    // 🌟 เพิ่มโค้ดฟังก์ชันนี้เข้าไป เพื่อให้ปุ่มออกจากระบบทำงานได้
+    function logout() {
+        currentRole = null; // รีเซ็ตสิทธิ์การใช้งาน
+        document.getElementById('loginPassword').value = ''; // ล้างรหัสผ่านเดิมที่เคยกรอก
+        document.getElementById('loginOverlay').style.display = 'flex'; // แสดงหน้าจอ Log In ใหม่
+        document.getElementById('mainContainer').style.display = 'none'; // ซ่อนหน้าจอจัดการข้อมูล
+        if (calendar) { 
+            calendar.destroy(); // เคลียร์ปฏิทินเก่าออกเพื่อความปลอดภัย
+        }
     }
 
     // 1. ระบบควบคุมการล็อกอิน
